@@ -34,8 +34,13 @@
         <param name="voxel_size" value="0.001"/>
        
 
-        <rosparam param="hsv_range"> [200,280,0.20,1] </rosparam> 
+        <rosparam param="hsv_range"> [200,360,0,255] </rosparam>  <!-- MIN MAX, SAT ,VAL -->
     </node>
+
+
+    <node name="stewart_platform" pkg="rviz" type="rviz"
+        args="-d $(find stewart_platform)/rviz/stewart.rviz" respawn="false" />
+
 
 
 </launch>	

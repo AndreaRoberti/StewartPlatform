@@ -63,10 +63,9 @@ public:
 
     cv::Mat hue_red(cv::Mat HSV);
 
-	void PcdRGBtoHSV(pcl::PointCloud<pcl::PointXYZRGB> &in, pcl::PointCloud<pcl::PointXYZHSV> &out);
+    void PcdRGBtoHSV(pcl::PointCloud<pcl::PointXYZRGB> &in, pcl::PointCloud<pcl::PointXYZHSV> &out);
 
-	void PointRGBtoHSV(pcl::PointXYZRGB &in, pcl::PointXYZHSV &out);
-
+    void PointRGBtoHSV(pcl::PointXYZRGB &in, pcl::PointXYZHSV &out);
 
     void filterContour(cv::Mat &img, cv::Mat &mask)
     {
@@ -144,7 +143,6 @@ color_seg::color_seg(ros::NodeHandle &nh) : nh_(nh), private_nh_("~"),
 {
 }
 
-
 void color_seg::PointRGBtoHSV(pcl::PointXYZRGB &in, pcl::PointXYZHSV &out)
 {
     const unsigned char max = std::max(in.r, std::max(in.g, in.b));
@@ -193,8 +191,6 @@ void color_seg::PcdRGBtoHSV(pcl::PointCloud<pcl::PointXYZRGB> &in,
         out.points.push_back(p);
     }
 }
-
-
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr color_seg::colorSegmentation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
 {
@@ -262,6 +258,10 @@ void color_seg::update()
         // map_cld_ptr = pcd_utils::voxel_grid_subsample(xyz_cld_ptr, voxel_size); // if u want to subsample
 
         segmented_cloud = colorSegmentation(xyz_cld_ptr);
+        
+        // Eigen::Vector4f centroid, minp, maxp;
+        // pcl::getMinMax3D(*segmented_cloud, minp, maxp);
+        // pcl::compute3DCentroid<pcl::PointXYZRGB>(*segmented_cloud, centroid);
 
         pcl::toROSMsg(*segmented_cloud, output_cloud_msg);
         cloud_pub.publish(output_cloud_msg);

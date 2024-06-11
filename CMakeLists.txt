@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf2_ros
   tf2_eigen
-  visp_ros
   image_transport
   cv_bridge
   pcl_conversions

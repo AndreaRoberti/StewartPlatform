@@ -3,8 +3,14 @@ import numpy as np
 import rospy
 from numpy import array, eye, asarray
 from filterpy.kalman import ExtendedKalmanFilter
+from numpy import array, eye, asarray
+from filterpy.kalman import ExtendedKalmanFilter
 import tf
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
+from filterpy.common import Saver
+import matplotlib.pyplot as plt
+import scipy.linalg as linalg
+from StewartPlatform import *
 from filterpy.common import Saver
 import matplotlib.pyplot as plt
 import scipy.linalg as linalg
@@ -35,9 +41,11 @@ class StewartPlatformEKF():
     def pose_callback(self,msg):
         self.sphere_pose_ = msg
         #print(self.sphere_pose_)
+        #print(self.sphere_pose_)
         rot_matrix = tf.transformations.quaternion_matrix([self.sphere_pose_.pose.orientation.x,self.sphere_pose_.pose.orientation.y,self.sphere_pose_.pose.orientation.z,self.sphere_pose_.pose.orientation.w])
         trasl_matrix = tf.transformations.translation_matrix( [self.sphere_pose_.pose.position.x, self.sphere_pose_.pose.position.y, self.sphere_pose_.pose.position.z])
         self.sphere_matrix_ = np.dot(trasl_matrix, rot_matrix)
+        #print(self.sphere_matrix_)
         #print(self.sphere_matrix_)
 
     def get_transform(self, source_frame, target_frame):
@@ -50,6 +58,8 @@ class StewartPlatformEKF():
             rot_matrix = tf.transformations.quaternion_matrix([rot[0],rot[1],rot[2],rot[3]])
             trasl_matrix = tf.transformations.translation_matrix( [trans[0], trans[1], trans[2]])
             T_matrix = np.dot(trasl_matrix, rot_matrix)
+            #print(T_matrix)
+            #print('-------')
             #print(T_matrix)
             #print('-------')
             return T_matrix
@@ -175,6 +185,7 @@ class StewartPlatformEKF():
 
 def main():
     rospy.init_node("stewart_platform_ekf")
+    print('start')
     print('start')
 
     stewart_platform_ekf = StewartPlatformEKF()

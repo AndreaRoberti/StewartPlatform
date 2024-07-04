@@ -15,6 +15,7 @@ class StewartPlatform():
 
         self.initTipMatrix_ = self.sim_.getObjectPose(self.tip_, self.base_)
         print(self.initTipMatrix_)
+        self.z0_ = self.initTipMatrix_[2]
 
         self.ikEnv_ = self.simIK_.createEnvironment()
         self.ikGroup_ = self.simIK_.createGroup(self.ikEnv_)
@@ -74,12 +75,11 @@ class StewartPlatform():
         
     def example_ik(self, t):
        
-        
         # Parameters for the function z(t)
-        z0 = 0.95
+        z0 = self.z0_
         b = 3.09
         n = 3
-        tau = 32.38
+        tau = 1
         phi = 0
 
         # Compute z(t)

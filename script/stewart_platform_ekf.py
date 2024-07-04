@@ -4,17 +4,13 @@ import rospy
 from numpy import array, eye, asarray
 from filterpy.kalman import ExtendedKalmanFilter
 from numpy import array, eye, asarray
-from filterpy.kalman import ExtendedKalmanFilter
 import tf
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
 from filterpy.common import Saver
 import matplotlib.pyplot as plt
 import scipy.linalg as linalg
 from StewartPlatform import *
-from filterpy.common import Saver
-import matplotlib.pyplot as plt
-import scipy.linalg as linalg
-from StewartPlatform import *
+from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 
 
 class StewartPlatformEKF():
@@ -36,6 +32,13 @@ class StewartPlatformEKF():
         self.xs_ = []  # Tutti i valori di x
         self.pos_ = []  # Posizioni reali z
         #self.s_ = Saver(self.rk)
+
+                
+        client = RemoteAPIClient()
+        self.stewart_platform = StewartPlatform(client)
+        self.sim = client.require('sim')
+        self.sim.setStepping(True)
+        self.sim.startSimulation()
 
 
     def pose_callback(self,msg):
@@ -72,8 +75,8 @@ class StewartPlatformEKF():
         that would correspond to that state.
         ybar è la posizione che ricavo dalla simulazione/ mean position of the feature in 3d space
         """
-        T_sphere_to_camera = self.get_transform('camera_link','red_sphere')
-        ybar = T_sphere_to_camera[:3,3]
+        T_sphere_to_world = self.get_transform('world','red_sphere')
+        ybar = T_sphere_to_world[:3,3]
         alpha = x[0]
         tau= x[1]
         b = x[2]
@@ -116,12 +119,15 @@ class StewartPlatformEKF():
             #return (np.array([dalpha,dtau,db,dz0]))   
     
     def update(self):
+
         t= rospy.get_time() - self.start_t_ #time
-        #print(t)
+        #print(f'Simulation time: {t:.2f} [s]')
+        self.stewart_platform.example_ik(t)
+        self.sim.step()
 
         #parametri modello
-        z0=0.95 #position of the liver at the exale
-        tau = 32.38 #respiration frequency
+        z0=self.stewart_platform.z0_ #position of the liver at the exale
+        tau = 1 #respiration frequency
         b = 3.09 #amplitude
         phi = 0 #phase
         n = 3 #gradient of the model
@@ -157,23 +163,26 @@ class StewartPlatformEKF():
         
         # self.sphere_matrix_
             
-        if t > 10.00:
+        if t > 20.00:
             #self.s_.to_array()
             self.xs_ = asarray(self.xs_)
             self.pos_ = asarray(self.pos_)
-            print(np.shape(self.xs_))
+            #print(np.shape(self.xs_))
             
             #il filtro mi restituisce le variabili di stato ma a me interssa lo spostamento lungo z della palla quindi sostituisco le varibiali nel modello?
             z2 = self.xs_[:,3] - self.xs_[:,2]*(np.cos(self.xs_[:,0])**(2*3)) 
+            print()
+            print(self.xs_[:,3])
+            print(self.stewart_platform.z0_)
             #print(len(z2))
             print('*************************')
             #print(z2)
 
             plt.plot(range(len(z2)), z2, label='EKF', color='b', marker='o')
             pos = self.pos_[:,2]
-            print(pos) #posizione "reale"
+            #print(pos) #posizione "reale"
             print('-----------------')
-            print(z2) #posizione trovata  con il filtro
+            #print(z2) #posizione trovata  con il filtro
             plt.plot(range(len(z2)), pos, label='Real position', color='r', marker='x')
             plt.xlabel('Numero misurazioni nel tempo')
             plt.ylabel('Posizione')
@@ -181,6 +190,8 @@ class StewartPlatformEKF():
             plt.show()
             rospy.signal_shutdown('Plot completato')
 
+    def stopSimulation(self):
+        self.sim.stopSimulation()
 
 #------------------------------------------------------------------
 
@@ -198,7 +209,7 @@ def main():
         stewart_platform_ekf.update()
         ros_rate.sleep()
 
-
+    stewart_platform_ekf.stopSimulation()
     
 
 if __name__ == '__main__':

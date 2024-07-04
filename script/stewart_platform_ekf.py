@@ -35,7 +35,7 @@ class StewartPlatformEKF():
         self.tempo_ = []
         self.xs_ = []  # Tutti i valori di x
         self.pos_ = []  # Posizioni reali z
-        self.s_ = Saver(self.rk)
+        #self.s_ = Saver(self.rk)
 
 
     def pose_callback(self,msg):
@@ -82,7 +82,7 @@ class StewartPlatformEKF():
         n=3
         T_camera_to_world = self.get_transform('world', 'camera_link') #trasformation matrix camera world 
         rW = T_camera_to_world[:3,3] #translation vector
-        Rrw = T_camera_to_world[:3,:3] #rotation matrixù
+        Rrw = T_camera_to_world[:3,:3] #rotation matrix
         #print(Rrw.dot(eig))
         p1 = Rrw.dot(eig)*(z0-b*(np.cos(alpha)**(2*n))) + ybar -rW
         #print(np.shape(p1))
@@ -120,23 +120,24 @@ class StewartPlatformEKF():
         #print(t)
 
         #parametri modello
-        z0=0.95
-        tau = 32.38
-        b = 3.09
-        phi = 0
-        n = 3
+        z0=0.95 #position of the liver at the exale
+        tau = 32.38 #respiration frequency
+        b = 3.09 #amplitude
+        phi = 0 #phase
+        n = 3 #gradient of the model
         alpha = np.pi*t/tau 
 
         #inizializzazione filtro
-        self.rk.x = np.array([alpha, tau, b, z0]).T
-        self.rk.F = np.eye(4) + np.array(([[0, 1, 0,0],[0, 0, 0, 0],[0, 0, 0, 0],[0,0,0,0]]))*t
+        self.rk.x = np.array([alpha, tau, b, z0]).T #state vector
+        self.rk.F = np.eye(4) + np.array(([[0, 1, 0,0],[0, 0, 0, 0],[0, 0, 0, 0],[0,0,0,0]]))*t #prediction model
         phi_tau = phi_b = phi_z0 = 1
         self.rk.Q = ([[phi_tau  * (t**3) / 3, phi_tau * (t**2) / 2, 0, 0],
                         [phi_tau * (t**2) / 2, phi_tau * t, 0, 0],
                         [0, 0, phi_b * t, 0],
-                        [0, 0, 0, phi_z0 * t]])
+                        [0, 0, 0, phi_z0 * t]]) #process noise covariance 
         self.rk.R = np.eye(3)*(np.random.normal(0,0.001,1)**2)#rumore bianco gaussiano (media,ampiezza,numero_elementi), in alternativa si può generale con filterpy
-        
+        #measurement noise covariance 
+
         #iterazioni step filtro di kalman
         #numero iterazioni da definire, per ora 20
         for i in range(20): #????
@@ -170,9 +171,9 @@ class StewartPlatformEKF():
 
             plt.plot(range(len(z2)), z2, label='EKF', color='b', marker='o')
             pos = self.pos_[:,2]
-            print(pos)
+            print(pos) #posizione "reale"
             print('-----------------')
-            print(z2)
+            print(z2) #posizione trovata  con il filtro
             plt.plot(range(len(z2)), pos, label='Real position', color='r', marker='x')
             plt.xlabel('Numero misurazioni nel tempo')
             plt.ylabel('Posizione')

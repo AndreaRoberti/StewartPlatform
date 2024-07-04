@@ -63,6 +63,10 @@ public:
 
     cv::Mat hue_red(cv::Mat HSV);
 
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr RGBImageToPointCloud(const cv::Mat &image, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &original_cloud);
+
+    cv::Mat pointCloudToRGBImage(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
+
     void PcdRGBtoHSV(pcl::PointCloud<pcl::PointXYZRGB> &in, pcl::PointCloud<pcl::PointXYZHSV> &out);
 
     void PointRGBtoHSV(pcl::PointXYZRGB &in, pcl::PointXYZHSV &out);
@@ -143,6 +147,42 @@ color_seg::color_seg(ros::NodeHandle &nh) : nh_(nh), private_nh_("~"),
 {
 }
 
+// Function to convert a PCL point cloud to an OpenCV image
+cv::Mat color_seg::pointCloudToRGBImage(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+{
+    cv::Mat image(cloud->height, cloud->width, CV_8UC3);
+    for (size_t i = 0; i < cloud->points.size(); ++i)
+    {
+        const pcl::PointXYZRGB &point = cloud->points[i];
+        image.at<cv::Vec3b>(i / cloud->width, i % cloud->width) = cv::Vec3b(point.b, point.g, point.r);
+    }
+    return image;
+}
+
+// Function to convert an OpenCV image back to a PCL point cloud
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr color_seg::RGBImageToPointCloud(const cv::Mat &image, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &original_cloud)
+{
+    auto cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+    cloud->width = image.cols;
+    cloud->height = image.rows;
+    cloud->is_dense = false;
+    cloud->points.resize(cloud->width * cloud->height);
+
+    for (size_t i = 0; i < cloud->points.size(); ++i)
+    {
+        pcl::PointXYZRGB &point = cloud->points[i];
+        cv::Vec3b color = image.at<cv::Vec3b>(i / cloud->width, i % cloud->width);
+        point.b = color[0];
+        point.g = color[1];
+        point.r = color[2];
+        point.x = original_cloud->points[i].x;
+        point.y = original_cloud->points[i].y;
+        point.z = original_cloud->points[i].z;
+    }
+
+    return cloud;
+}
+
 void color_seg::PointRGBtoHSV(pcl::PointXYZRGB &in, pcl::PointXYZHSV &out)
 {
     const unsigned char max = std::max(in.r, std::max(in.g, in.b));
@@ -203,8 +243,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr color_seg::colorSegmentation(pcl::PointCl
     segmented_cloud_tmp->points.clear();
 
     for (size_t i = 0; i < HSV->points.size(); i++)
-        // if ((HSV->points[i].h > 35 && HSV->points[i].h < 70) && (HSV->points[i].s >= 0.70 && HSV->points[i].s <= 1)) // yellow
-        if ((HSV->points[i].h > hsv_range[0] && HSV->points[i].h < hsv_range[1]) && (HSV->points[i].s >= hsv_range[2] && HSV->points[i].s <= hsv_range[3])) // yellow
+        if ((HSV->points[i].h > 35 && HSV->points[i].h < 70) && (HSV->points[i].s >= 0.70 && HSV->points[i].s <= 1)) // yellow
+        // if ((HSV->points[i].h > hsv_range[0] && HSV->points[i].h < hsv_range[1]) && (HSV->points[i].s >= hsv_range[2] && HSV->points[i].s <= hsv_range[3])) // yellow
         {
             pcl::PointXYZRGB out_points;
             out_points.x = HSV->points[i].x;
@@ -252,22 +292,22 @@ void color_seg::init()
 void color_seg::update()
 {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr map_cld_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
+    /*
+        if (xyz_cld_ptr->size() > 0)
+        {
+            // map_cld_ptr = pcd_utils::voxel_grid_subsample(xyz_cld_ptr, voxel_size); // if u want to subsample
 
-    if (xyz_cld_ptr->size() > 0)
-    {
-        // map_cld_ptr = pcd_utils::voxel_grid_subsample(xyz_cld_ptr, voxel_size); // if u want to subsample
+            segmented_cloud = colorSegmentation(xyz_cld_ptr);
 
-        segmented_cloud = colorSegmentation(xyz_cld_ptr);
-        
-        // Eigen::Vector4f centroid, minp, maxp;
-        // pcl::getMinMax3D(*segmented_cloud, minp, maxp);
-        // pcl::compute3DCentroid<pcl::PointXYZRGB>(*segmented_cloud, centroid);
+            // Eigen::Vector4f centroid, minp, maxp;
+            // pcl::getMinMax3D(*segmented_cloud, minp, maxp);
+            // pcl::compute3DCentroid<pcl::PointXYZRGB>(*segmented_cloud, centroid);
 
-        pcl::toROSMsg(*segmented_cloud, output_cloud_msg);
-        cloud_pub.publish(output_cloud_msg);
-    }
-
-    if (!image_rgb_.empty())
+            pcl::toROSMsg(*segmented_cloud, output_cloud_msg);
+            cloud_pub.publish(output_cloud_msg);
+        }
+    */
+    if (!image_rgb_.empty() && xyz_cld_ptr->size() > 0)
     {
         cv::Mat HSV;
         cv::cvtColor(image_rgb_, HSV, CV_BGR2HSV);
@@ -286,6 +326,19 @@ void color_seg::update()
 
         points_pub_.publish(point_out);
 
+        cv::Mat red_segmented;
+
+        cv::Mat rgb_image = pointCloudToRGBImage(xyz_cld_ptr);
+        cv::bitwise_and(image_rgb_, image_rgb_, red_segmented, mask);
+
+        // Convert the segmented OpenCV image back to a PCL point cloud
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr red_cloud = RGBImageToPointCloud(red_segmented, xyz_cld_ptr);
+
+        pcl::toROSMsg(*red_cloud, output_cloud_msg);
+        output_cloud_msg.header.frame_id = fixed_frame;
+        output_cloud_msg.header.stamp = ros::Time::now();
+        cloud_pub.publish(output_cloud_msg);
+
         PublishRenderedImage(rendered_image_pub_, mask, "mono8", "camera_color_optical_frame");
     }
 }
@@ -300,8 +353,8 @@ int color_segmentation(int argc, char **argv)
 
     while (ros::ok())
     {
-        color_seg.update();
         ros::spinOnce();
+        color_seg.update();
     }
     return 0;
 }

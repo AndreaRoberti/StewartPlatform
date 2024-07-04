@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
   LIBRARIES
   CATKIN_DEPENDS roscpp
 )
@@ -31,7 +31,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
   # ${PCL_INCLUDE_DIRS} 
-  include
+  # include
 )
 
 set(LIBRARIES

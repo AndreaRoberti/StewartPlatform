@@ -65,7 +65,7 @@ class StewartPlatformEKF():
             return T_matrix
 
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            print('No transform available')
+            print('No transform available %s - %s',source_frame, target_frame )
         
     def Hx(self, x):
         """ takes a state variable and returns the measurement

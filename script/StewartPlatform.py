@@ -65,7 +65,7 @@ class StewartPlatform():
         if sum_of_squares >= 0:
             qw = np.sqrt(sum_of_squares) / 2
         else:
-            print("Warning: Negative sum of squares encountered.")
+            #print("Warning: Negative sum of squares encountered.")
             qw = 1
         qx = (rotation_matrix[2, 1] - rotation_matrix[1, 2]) / (4 * qw)
         qy = (rotation_matrix[0, 2] - rotation_matrix[2, 0]) / (4 * qw)
@@ -77,13 +77,13 @@ class StewartPlatform():
        
         # Parameters for the function z(t)
         z0 = self.z0_
-        b = 3.09
+        b = 1
         n = 3
         tau = 1
         phi = 0
 
         # Compute z(t)
-        z_t = z0-b * (np.cos(np.pi * (t / tau)- phi)**(2*n))
+        z_t = z0-b * ((np.cos(np.pi * (t / tau)- phi))**(2*n))
         zg = z_t
         o_r = b
         n_r = 0.2

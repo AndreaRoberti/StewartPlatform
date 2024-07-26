@@ -10,6 +10,8 @@ from filterpy.common import Saver
 import matplotlib.pyplot as plt
 import scipy.linalg as linalg
 from StewartPlatform import *
+
+
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 
 
@@ -18,8 +20,13 @@ class StewartPlatformEKF():
 
         self.pose_name_ = rospy.get_param('~pose_name','pose_name_default')
         self.sphere_topic_name_ = rospy.get_param('~sphere_topic_name','/sphere/pose')
+        self.ekf_real_topic_name_ = rospy.get_param('~ekf_real_topic_name','/ekf/real/pose')
+        self.ekf_est_topic_name_ = rospy.get_param('~ekf_est_topic_name','/ekf/real/pose')
         
         self.pose_sub_ = rospy.Subscriber(self.sphere_topic_name_, PoseStamped, self.pose_callback)
+        self.pose_ekf_real_pub_ = rospy.Publisher(self.ekf_real_topic_name_, PoseStamped, queue_size=1)
+        self.pose_ekf_estimate_pub_ = rospy.Publisher(self.ekf_est_topic_name_, PoseStamped, queue_size=1)
+        
         self.sphere_matrix_ = 0
 
 
@@ -69,7 +76,28 @@ class StewartPlatformEKF():
 
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             print('No transform available %s - %s',source_frame, target_frame )
+
+    # pos posizione reale, z2 posizione trovata  con il filtro
+    def publishResult(self, pos, z2):
+        print("--------------")
+        pos_transformed = PoseStamped()
+        pos_transformed.header.frame_id = 'world'
+        pos_transformed.header.stamp = rospy.Time.now()
+        pos_transformed.pose.position.x = pos[0]
+        pos_transformed.pose.position.y = pos[1]
+        pos_transformed.pose.position.z = pos[2]
         
+        z2_transformed = PoseStamped()
+        z2_transformed.header.frame_id = 'world'
+        z2_transformed.header.stamp = rospy.Time.now()
+        z2_transformed.pose.position.x = z2[0]
+        z2_transformed.pose.position.y = z2[0]
+        z2_transformed.pose.position.z = z2[0]
+        
+        self.pose_ekf_real_pub_.publish(pos_transformed)
+        self.pose_ekf_estimate_pub_.publish(z2_transformed)
+
+
     def Hx(self, x):
         """ takes a state variable and returns the measurement
         that would correspond to that state.
@@ -156,39 +184,53 @@ class StewartPlatformEKF():
                 #self.s_.save() --> nel test è utilizzata, serve?
 
         zz = self.get_transform('red_sphere','world')
-        if isinstance(zz, np.ndarray):
-            zz = zz[:3,3] #vettore posizione
-            self.pos_.append(zz) #lista di tutte le posizioni della pallina misurate dalla camera (no rumore)
-            self.xs_.append(self.rk.x) #lista variabili di stato calcolate dal filtro
-        
-        # self.sphere_matrix_
-            
-        if t > 20.00:
-            #self.s_.to_array()
-            self.xs_ = asarray(self.xs_)
-            self.pos_ = asarray(self.pos_)
-            #print(np.shape(self.xs_))
-            
-            #il filtro mi restituisce le variabili di stato ma a me interssa lo spostamento lungo z della palla quindi sostituisco le varibiali nel modello?
-            z2 = self.xs_[:,3] - self.xs_[:,2]*(np.cos(self.xs_[:,0])**(2*3)) 
-            print()
-            print(self.xs_[:,3])
-            print(self.stewart_platform.z0_)
-            #print(len(z2))
-            print('*************************')
-            #print(z2)
+        print(zz)
+        print(zz[:, -1])
+        zz = zz[:3,3]
+        print(zz)
+        # np.format_float_positional(scientific_notation, precision=10)
+        self.publishResult(zz,zz)
 
-            plt.plot(range(len(z2)), z2, label='EKF', color='b', marker='o')
-            pos = self.pos_[:,2]
-            #print(pos) #posizione "reale"
-            print('-----------------')
-            #print(z2) #posizione trovata  con il filtro
-            plt.plot(range(len(z2)), pos, label='Real position', color='r', marker='x')
-            plt.xlabel('Numero misurazioni nel tempo')
-            plt.ylabel('Posizione')
-            plt.legend()
-            plt.show()
-            rospy.signal_shutdown('Plot completato')
+        # if isinstance(zz, np.ndarray):
+        #     zz = zz[:3,3] #vettore posizione
+        #     self.pos_.append(zz) #lista di tutte le posizioni della pallina misurate dalla camera (no rumore)
+        #     self.xs_.append(self.rk.x) #lista variabili di stato calcolate dal filtro
+        
+        
+        # if t > 5.00:
+        #     self.xs_ = asarray(self.xs_)                    
+        #     self.pos_ = asarray(self.pos_)
+        #     z2 = self.xs_[:,3] - self.xs_[:,2]*(np.cos(self.xs_[:,0])**(2*3)) 
+        #     pos = self.pos_[:,2]
+
+        #     self.publishResult(pos,z2)            
+        
+        # if t > 20.00:
+        #     #self.s_.to_array()
+        #     self.xs_ = asarray(self.xs_)
+        #     self.pos_ = asarray(self.pos_)
+        #     #print(np.shape(self.xs_))
+            
+        #     #il filtro mi restituisce le variabili di stato ma a me interssa lo spostamento lungo z della palla quindi sostituisco le varibiali nel modello?
+        #     z2 = self.xs_[:,3] - self.xs_[:,2]*(np.cos(self.xs_[:,0])**(2*3)) 
+        #     print()
+        #     print(self.xs_[:,3])
+        #     print(self.stewart_platform.z0_)
+        #     #print(len(z2))
+        #     print('*************************')
+        #     #print(z2)
+
+        #     plt.plot(range(len(z2)), z2, label='EKF', color='b', marker='o')
+        #     pos = self.pos_[:,2]
+        #     #print(pos) #posizione "reale"
+        #     print('-----------------')
+        #     #print(z2) #posizione trovata  con il filtro
+        #     plt.plot(range(len(z2)), pos, label='Real position', color='r', marker='x')
+        #     plt.xlabel('Numero misurazioni nel tempo')
+        #     plt.ylabel('Posizione')
+        #     plt.legend()
+        #     plt.show()
+        #     rospy.signal_shutdown('Plot completato')
 
     def stopSimulation(self):
         self.sim.stopSimulation()

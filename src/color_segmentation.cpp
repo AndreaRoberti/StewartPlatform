@@ -9,6 +9,7 @@
 #include <tf_conversions/tf_eigen.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
@@ -30,7 +31,7 @@ private:
     // Ros handler
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
-    std::string fixed_frame, optical_frame, cld_topic_name, image_topic_;
+    std::string fixed_frame_, optical_frame, cld_topic_name, image_topic_;
     tf::StampedTransform optical2map;
     tf::TransformListener listener;
 
@@ -41,7 +42,7 @@ private:
 
     sensor_msgs::PointCloud2 output_cloud_msg;
 
-    ros::Publisher cloud_pub, points_pub_;
+    ros::Publisher cloud_pub, points_pub_, pose_output_pub_;
     ros::Subscriber cloud_sub, image_sub_;
 
     image_transport::ImageTransport it_;
@@ -62,6 +63,8 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colorSegmentation(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
 
     cv::Mat hue_red(cv::Mat HSV);
+
+    void createPoseArray(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr RGBImageToPointCloud(const cv::Mat &image, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &original_cloud);
 
@@ -127,11 +130,11 @@ public:
         pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
         try
         {
-            listener.waitForTransform(optical_frame, fixed_frame, input->header.stamp, ros::Duration(5.0));
-            listener.lookupTransform(fixed_frame, optical_frame, input->header.stamp, optical2map);
+            listener.waitForTransform(optical_frame, fixed_frame_, input->header.stamp, ros::Duration(5.0));
+            listener.lookupTransform(fixed_frame_, optical_frame, input->header.stamp, optical2map);
 
             pcl_ros::transformPointCloud(*cloud, *xyz_cld_ptr, optical2map);
-            xyz_cld_ptr->header.frame_id = fixed_frame;
+            xyz_cld_ptr->header.frame_id = fixed_frame_;
         }
         catch (tf::TransformException ex)
         {
@@ -163,24 +166,44 @@ cv::Mat color_seg::pointCloudToRGBImage(const pcl::PointCloud<pcl::PointXYZRGB>:
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr color_seg::RGBImageToPointCloud(const cv::Mat &image, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &original_cloud)
 {
     auto cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-    cloud->width = image.cols;
-    cloud->height = image.rows;
+    // cloud->width = image.cols;
+    // cloud->height = image.rows;
     cloud->is_dense = false;
-    cloud->points.resize(cloud->width * cloud->height);
+    // cloud->points.resize(cloud->width * cloud->height);
+
+    for (size_t i = 0; i < original_cloud->points.size(); ++i)
+    {
+        // pcl::PointXYZRGB &point = cloud->points[i];
+        pcl::PointXYZRGB point;
+        cv::Vec3b color = image.at<cv::Vec3b>(i / image.cols, i % image.cols);
+        if (color[0] != 0 && color[1] != 0 && color[2] != 0)
+        {
+            point.b = color[0];
+            point.g = color[1];
+            point.r = color[2];
+            point.x = original_cloud->points[i].x;
+            point.y = original_cloud->points[i].y;
+            point.z = original_cloud->points[i].z;
+            cloud->points.push_back(point);
+        }
+    }
+    return cloud;
+}
+
+void color_seg::createPoseArray(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+{
+    geometry_msgs::PoseArray output_array;
+    output_array.header.frame_id = fixed_frame_;
+    output_array.header.stamp = ros::Time::now();
+    output_array.poses.resize(cloud->points.size());
 
     for (size_t i = 0; i < cloud->points.size(); ++i)
     {
-        pcl::PointXYZRGB &point = cloud->points[i];
-        cv::Vec3b color = image.at<cv::Vec3b>(i / cloud->width, i % cloud->width);
-        point.b = color[0];
-        point.g = color[1];
-        point.r = color[2];
-        point.x = original_cloud->points[i].x;
-        point.y = original_cloud->points[i].y;
-        point.z = original_cloud->points[i].z;
+        output_array.poses[i].position.x = cloud->points[i].x;
+        output_array.poses[i].position.y = cloud->points[i].y;
+        output_array.poses[i].position.z = cloud->points[i].z;
     }
-
-    return cloud;
+    pose_output_pub_.publish(output_array);
 }
 
 void color_seg::PointRGBtoHSV(pcl::PointXYZRGB &in, pcl::PointXYZHSV &out)
@@ -256,7 +279,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr color_seg::colorSegmentation(pcl::PointCl
             segmented_cloud_tmp->push_back(out_points);
         }
 
-    segmented_cloud_tmp->header.frame_id = fixed_frame;
+    segmented_cloud_tmp->header.frame_id = fixed_frame_;
     segmented_cloud_tmp->header.stamp = xyz_cld_ptr->header.stamp;
     return segmented_cloud_tmp;
 }
@@ -274,7 +297,7 @@ cv::Mat color_seg::hue_red(cv::Mat HSV)
 void color_seg::init()
 {
 
-    private_nh_.param("fixed_frame", fixed_frame, std::string("/world"));
+    private_nh_.param("fixed_frame", fixed_frame_, std::string("/world"));
     private_nh_.param("image_topic", image_topic_, std::string("/camera/color/image_rect_color"));
     private_nh_.param("optical_frame", optical_frame, std::string("/camera_color_optical_frame"));
     private_nh_.param("cld_topic_name", cld_topic_name, std::string("/camera/depth_registered/points"));
@@ -286,27 +309,16 @@ void color_seg::init()
 
     cloud_pub = nh_.advertise<sensor_msgs::PointCloud2>("/output_cloud", 1, this);
     points_pub_ = nh_.advertise<geometry_msgs::PointStamped>("/output/points", 1, this);
+
+    pose_output_pub_ = nh_.advertise<geometry_msgs::PoseArray>("/output/pose_array", 1, this);
+
     rendered_image_pub_ = it_.advertise("/output/image", 1);
 }
 
 void color_seg::update()
 {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr map_cld_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
-    /*
-        if (xyz_cld_ptr->size() > 0)
-        {
-            // map_cld_ptr = pcd_utils::voxel_grid_subsample(xyz_cld_ptr, voxel_size); // if u want to subsample
 
-            segmented_cloud = colorSegmentation(xyz_cld_ptr);
-
-            // Eigen::Vector4f centroid, minp, maxp;
-            // pcl::getMinMax3D(*segmented_cloud, minp, maxp);
-            // pcl::compute3DCentroid<pcl::PointXYZRGB>(*segmented_cloud, centroid);
-
-            pcl::toROSMsg(*segmented_cloud, output_cloud_msg);
-            cloud_pub.publish(output_cloud_msg);
-        }
-    */
     if (!image_rgb_.empty() && xyz_cld_ptr->size() > 0)
     {
         cv::Mat HSV;
@@ -335,9 +347,11 @@ void color_seg::update()
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr red_cloud = RGBImageToPointCloud(red_segmented, xyz_cld_ptr);
 
         pcl::toROSMsg(*red_cloud, output_cloud_msg);
-        output_cloud_msg.header.frame_id = fixed_frame;
+        output_cloud_msg.header.frame_id = fixed_frame_;
         output_cloud_msg.header.stamp = ros::Time::now();
         cloud_pub.publish(output_cloud_msg);
+
+        createPoseArray(red_cloud);
 
         PublishRenderedImage(rendered_image_pub_, mask, "mono8", "camera_color_optical_frame");
     }

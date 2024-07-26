@@ -65,7 +65,7 @@ class StewartPlatform():
         if sum_of_squares >= 0:
             qw = np.sqrt(sum_of_squares) / 2
         else:
-            print("Warning: Negative sum of squares encountered.")
+            # print("Warning: Negative sum of squares encountered.")
             qw = 1
         qx = (rotation_matrix[2, 1] - rotation_matrix[1, 2]) / (4 * qw)
         qy = (rotation_matrix[0, 2] - rotation_matrix[2, 0]) / (4 * qw)

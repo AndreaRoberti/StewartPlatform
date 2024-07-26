@@ -85,7 +85,7 @@ class StewartPlatformEKF():
         #rW = T_camera_to_world[:3,3] #translation vector
         #Rrw = T_camera_to_world[:3,:3] #rotation matrix
         #print(Rrw.dot(eig))
-        p1 = Rrw.dot(eig*(z0-b*(np.cos(alpha)**(2*n))) + ybar -rW)
+        p1 = np.array([Rrw.dot(eig*(z0-b*(np.cos(alpha)**(2*n))) + ybar -rW)])
         #print(np.shape(p1))
         return p1
 
@@ -150,7 +150,7 @@ class StewartPlatformEKF():
         alpha = np.pi*t/tau 
 
         #inizializzazione filtro
-        self.rk.x = np.array([alpha, tau, b, z0]).T #state vector
+        self.rk.x = np.array([alpha, tau, b, z0]) #state vector
         self.rk.F = np.eye(4) + np.array(([[0, 1, 0,0],[0, 0, 0, 0],[0, 0, 0, 0],[0,0,0,0]]))*t #prediction model
         phi_tau = phi_b = phi_z0 = 0.01
         self.rk.Q = np.array([[phi_tau  * (t**3) / 3, phi_tau * (t**2) / 2, 0, 0],
@@ -165,16 +165,16 @@ class StewartPlatformEKF():
         #iterazioni step filtro di kalman
         #numero iterazioni da definire, per ora 20
         for i in range(200): #????
-            T_sphere_to_camera = self.get_transform('camera_link','red_sphere')
-            if isinstance(T_sphere_to_camera, np.ndarray):
-                z = T_sphere_to_camera[:3,3] #tutto il vettore di traslazione
+            T_sphere_to_world = self.get_transform('world','red_sphere')
+            if isinstance(T_sphere_to_world, np.ndarray):
+                z = T_sphere_to_world[:3,3] #tutto il vettore di traslazione
                 #z = self.add_measurement_noise(z,self.rk.R) #aggiungo del rumore
                 self.rk.predict()
                 self.rk.update(z, self.Jacobian, self.Hx,R=self.rk.R)
                 #self.rk.predict_update(z, self.Jacobian, self.Hx)
                 #self.s_.save() --> nel test è utilizzata, serve?
 
-        zz = self.get_transform('red_sphere','camera_link')
+        zz = self.get_transform('red_sphere','world')
         print("----------------")
         print(zz)
         if isinstance(zz, np.ndarray):

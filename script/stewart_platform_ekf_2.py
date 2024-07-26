@@ -112,7 +112,7 @@ class StewartPlatformEKF():
             self.pos_.append(zz)
             self.xs_.append(self.rk.x[0])
 
-        if t > 50.00:
+        if t > 20.00:
             self.xs_ = asarray(self.xs_)
             self.pos_ = asarray(self.pos_)
             plt.plot(range(len(self.xs_)), self.xs_, label='EKF', color='b', marker='o')

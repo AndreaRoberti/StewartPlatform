@@ -1,10 +1,13 @@
 <launch>
 
+	<node pkg="rostopic"
+		type="rostopic"
+		name="start_sim"
+		args="pub /startSimulation std_msgs/Bool true" />
 
-        
-    <!-- <node name="republishL" type="republish" pkg="image_transport" output="screen" args="raw in:=/camera/color/image_rect_color compressed out:=/camera/color/image_rect_color" /> -->
 
-	<node name="coppelia_combiner" pkg="stewart_platform" type="coppelia_combiner" args="" respawn="false"
+	<node name="coppelia_combiner" pkg="stewart_platform" type="coppelia_combiner" args=""
+		respawn="false"
 		output="screen">
 
 		<!-- if false, it work on coppeliasim with rosInterface plugin-->
@@ -26,21 +29,18 @@
 	</node>
 
 
-    <node name="colorSeg" pkg="stewart_platform" type="color_segmentation" args="" respawn="false" output="screen">
-                
-        <param name="cld_topic_name" type="string" value="/camera/depth_registered/points"/>
-        <param name="fixed_frame" type="string" value="world"/>
-        <param name="optical_frame" type="string" value="camera_color_optical_frame"/>
-        <param name="voxel_size" value="0.001"/>
-       
+	<node name="colorSeg" pkg="stewart_platform" type="color_segmentation" args="" respawn="false"
+		output="screen">
 
-        <rosparam param="hsv_range"> [200,360,0,255] </rosparam>  <!-- MIN MAX, SAT ,VAL -->
-    </node>
+		<param name="cld_topic_name" type="string" value="/camera/depth_registered/points" />
+		<param name="fixed_frame" type="string" value="world" />
+		<param name="optical_frame" type="string" value="camera_color_optical_frame" />
+
+	</node>
 
 
-    <node name="stewart_platform" pkg="rviz" type="rviz"
-        args="-d $(find stewart_platform)/rviz/stewart.rviz" respawn="false" />
-
+	<node name="stewart_platform" pkg="rviz" type="rviz"
+		args="-d $(find stewart_platform)/rviz/stewart.rviz" respawn="false" />
 
 
 </launch>	

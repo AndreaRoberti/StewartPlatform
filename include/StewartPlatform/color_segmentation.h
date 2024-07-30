@@ -33,7 +33,7 @@ private:
     tf::StampedTransform optical2map_;
     tf::TransformListener listener_;
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr xyz_cld_ptr;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr xyz_cld_ptr_;
     cv::Mat image_rgb_;
 
     sensor_msgs::PointCloud2 output_cloud_msg_;
@@ -43,18 +43,6 @@ private:
 
     image_transport::ImageTransport it_;
     image_transport::Publisher rendered_image_pub_;
-
-protected:
-    virtual ros::NodeHandle &getNodeHandle() { return nh_; }
-    virtual ros::NodeHandle &getPrivateNodeHandle() { return private_nh_; }
-
-public:
-    color_seg(ros::NodeHandle &nh);
-
-    ~color_seg() {}
-
-    void init();
-    void update();
 
     cv::Mat hue_red(cv::Mat HSV);
 
@@ -71,6 +59,19 @@ public:
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
 
     void cloudCallback(const sensor_msgs::PointCloud2ConstPtr &input);
+
+protected:
+    virtual ros::NodeHandle &getNodeHandle() { return nh_; }
+    virtual ros::NodeHandle &getPrivateNodeHandle() { return private_nh_; }
+
+public:
+    color_seg(ros::NodeHandle &nh);
+
+    ~color_seg() {}
+
+    void init();
+    void update();
+
 };
 
 int color_segmentation(int argc, char **argv);

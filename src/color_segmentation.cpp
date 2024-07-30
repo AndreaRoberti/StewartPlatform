@@ -2,7 +2,7 @@
 
 color_seg::color_seg(ros::NodeHandle &nh) : nh_(nh), private_nh_("~"),
                                             it_(nh),
-                                            xyz_cld_ptr(new pcl::PointCloud<pcl::PointXYZRGB>)
+                                            xyz_cld_ptr_(new pcl::PointCloud<pcl::PointXYZRGB>)
 {
 }
 
@@ -65,8 +65,8 @@ void color_seg::cloudCallback(const sensor_msgs::PointCloud2ConstPtr &input)
         listener_.waitForTransform(optical_frame, fixed_frame_, input->header.stamp, ros::Duration(5.0));
         listener_.lookupTransform(fixed_frame_, optical_frame, input->header.stamp, optical2map_);
 
-        pcl_ros::transformPointCloud(*cloud, *xyz_cld_ptr, optical2map_);
-        xyz_cld_ptr->header.frame_id = fixed_frame_;
+        pcl_ros::transformPointCloud(*cloud, *xyz_cld_ptr_, optical2map_);
+        xyz_cld_ptr_->header.frame_id = fixed_frame_;
     }
     catch (tf::TransformException ex)
     {
@@ -147,7 +147,7 @@ void color_seg::init()
     private_nh_.param("image_topic", image_topic_, std::string("/camera/color/image_rect_color"));
     private_nh_.param("optical_frame", optical_frame, std::string("/camera_color_optical_frame"));
     private_nh_.param("cld_topic_name", cld_topic_name, std::string("/camera/depth_registered/points"));
-        
+
     cloud_sub = nh_.subscribe(cld_topic_name, 1, &color_seg::cloudCallback, this);
     image_sub_ = nh_.subscribe(image_topic_, 1, &color_seg::imageCallback, this);
 
@@ -161,7 +161,7 @@ void color_seg::init()
 
 void color_seg::update()
 {
-    if (!image_rgb_.empty() && xyz_cld_ptr->size() > 0)
+    if (!image_rgb_.empty() && xyz_cld_ptr_->size() > 0)
     {
         cv::Mat HSV;
         cv::cvtColor(image_rgb_, HSV, CV_BGR2HSV);
@@ -182,11 +182,11 @@ void color_seg::update()
 
         cv::Mat red_segmented;
 
-        cv::Mat rgb_image = pointCloudToRGBImage(xyz_cld_ptr);
+        cv::Mat rgb_image = pointCloudToRGBImage(xyz_cld_ptr_);
         cv::bitwise_and(image_rgb_, image_rgb_, red_segmented, mask);
 
         // Convert the segmented OpenCV image back to a PCL point cloud
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr red_cloud = RGBImageToPointCloud(red_segmented, xyz_cld_ptr);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr red_cloud = RGBImageToPointCloud(red_segmented, xyz_cld_ptr_);
 
         pcl::toROSMsg(*red_cloud, output_cloud_msg_);
         output_cloud_msg_.header.frame_id = fixed_frame_;

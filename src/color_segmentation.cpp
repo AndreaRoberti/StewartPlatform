@@ -159,6 +159,14 @@ void color_seg::init()
     rendered_image_pub_ = it_.advertise("/output/image", 1);
 }
 
+void color_seg::PublishCentroid(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+{
+    Eigen::Vector4f centroid, minp, maxp;
+    // pcl::getMinMax3D(*cloud, minp, maxp);
+    pcl::compute3DCentroid<pcl::PointXYZRGB>(*cloud, centroid);
+    // centroid[0],  centroid[1], centroid[2]
+}
+
 void color_seg::update()
 {
     if (!image_rgb_.empty() && xyz_cld_ptr_->size() > 0)

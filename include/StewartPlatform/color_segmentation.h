@@ -54,6 +54,8 @@ private:
 
     void filterContour(cv::Mat &img, cv::Mat &mask);
 
+    void PublishCentroid(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
+
     void PublishRenderedImage(image_transport::Publisher pub, const cv::Mat image, const std::string encoding, const std::string camera_frame);
 
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);

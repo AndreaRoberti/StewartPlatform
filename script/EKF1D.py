@@ -90,7 +90,7 @@ class StewartPlatformEKF():
         noise= np.random.normal(loc=0, scale=np.sqrt(noise_variance))
         self.rk.R = np.array([[noise_variance]])#measurement noise covariance matrix ->errore sulla misurazione
 
-        for i in range(250):
+        for i in range(10):
             #T_sphere_to_camera= self.get_transform('red_sphere', 'camera_link')
             T_sphere_to_world = self.get_transform('red_sphere', 'world')
             if isinstance(T_sphere_to_world, np.ndarray):
@@ -112,7 +112,7 @@ class StewartPlatformEKF():
             self.pos_.append(zz)
             self.xs_.append(self.rk.x[0])
 
-        if t > 50.00:
+        if t > 30.00:
             self.xs_ = asarray(self.xs_)
             self.pos_ = asarray(self.pos_)
             plt.plot(range(len(self.xs_)), self.xs_, label='EKF', color='b', marker='o')
@@ -135,7 +135,7 @@ def main():
 
     stewart_platform_ekf = StewartPlatformEKF()
     
-    rate = 100 # Hz
+    rate = 100# Hz
     ros_rate = rospy.Rate(rate)
 
     while not rospy.is_shutdown():

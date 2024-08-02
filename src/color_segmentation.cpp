@@ -155,6 +155,7 @@ void color_seg::init()
     points_pub_ = nh_.advertise<geometry_msgs::PointStamped>("/output/points", 1, this);
 
     pose_output_pub_ = nh_.advertise<geometry_msgs::PoseArray>("/output/pose_array", 1, this);
+    centroid_output_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("/output/centroid_pose", 1, this);
 
     rendered_image_pub_ = it_.advertise("/output/image", 1);
 }
@@ -165,6 +166,17 @@ void color_seg::PublishCentroid(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cl
     // pcl::getMinMax3D(*cloud, minp, maxp);
     pcl::compute3DCentroid<pcl::PointXYZRGB>(*cloud, centroid);
     // centroid[0],  centroid[1], centroid[2]
+    //std::cout << " centroid " << centroid << std::endl;
+
+    geometry_msgs::PoseStamped output_centroid;
+    output_centroid.header.frame_id = fixed_frame_;
+    output_centroid.header.stamp = ros::Time::now();
+
+    output_centroid.pose.position.x = centroid[0];
+    output_centroid.pose.position.y = centroid[1];
+    output_centroid.pose.position.z = centroid[2];
+ 
+    centroid_output_pub_.publish(output_centroid);
 }
 
 void color_seg::update()
@@ -202,6 +214,7 @@ void color_seg::update()
         cloud_pub.publish(output_cloud_msg_);
 
         createPoseArray(red_cloud);
+        PublishCentroid(red_cloud);
 
         PublishRenderedImage(rendered_image_pub_, mask, "mono8", "camera_color_optical_frame");
     }

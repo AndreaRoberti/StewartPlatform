@@ -38,7 +38,7 @@ private:
 
     sensor_msgs::PointCloud2 output_cloud_msg_;
 
-    ros::Publisher cloud_pub, points_pub_, pose_output_pub_;
+    ros::Publisher cloud_pub, points_pub_, pose_output_pub_,centroid_output_pub_;
     ros::Subscriber cloud_sub, image_sub_;
 
     image_transport::ImageTransport it_;

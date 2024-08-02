@@ -74,25 +74,71 @@ class StewartPlatform():
         return [position[0], position[1], position[2], qx, qy, qz, qw]
         
     def example_ik(self, t):
+        # Parameters for the functions x(t),y(t),z(t)
+        z0 = self.z0_
+        A = 1
+        omega = 3
+        phi = 0
+        z_t = z0-A * np.sin(omega*t+phi)
+        zg = z_t
+        o_rz =  A # Valore di riferimento originale z
+        n_rz = 0.08
+        z_t = (((z_t-(z0-A))*n_rz)/o_rz)-0.04
+
+
+        """
+        # Compute x(t),y(t),z(t)
+        x_t = z0-A * np.sin(omega*t+phi)
+        y_t = z0-A * np.sin(omega*t+phi)
+        xg = x_t
+        o_rx =  A # max_vecchio-min_vecchio z0-z0+A
+        n_rx = 0.05#max_nuovo-min_nuovo 0.05-(-0.05)
+        yg = y_t
+        o_ry =  A # Valore di riferimento originale y
+        n_ry = 0.05
+        x_t = (((x_t-(z0-A))*n_rx)/o_rx)-0.025
+        y_t = (((y_t-(z0-A))*n_ry)/o_ry)-0.0
+        """
+
+
+        # normalizzazione = (valore-min_vecchio)*(max_nuovo-min_nuovo)/(max_vecchio-min_vecchio) + min_nuovo
+        
+        T_matrix = self.pose_to_matrix(self.initTipMatrix_)
+        new_pose_matrix = T_matrix
+        #new_pose_matrix[0][3] = new_pose_matrix[0][3]+x_t 
+        #new_pose_matrix[1][3] = new_pose_matrix[1][3]+y_t 
+        new_pose_matrix[2][3] = new_pose_matrix[2][3]+z_t  # Update z position according to z(t)
        
-        # Parameters for the function z(t)
+        new_pose = self.matrix_to_pose(new_pose_matrix)
+        self.sim_.setObjectPose(self.target_, new_pose, self.base_)
+        self.simIK_.handleGroup(self.ikEnv_, self.ikGroup_, {"syncWorlds": True})
+       
+        """
+        # Parameters for the functions x(t),y(t),z(t)
         z0 = self.z0_
         b = 1
         n = 3
         tau = 1
         phi = 0
 
-        # Compute z(t)
+        # Compute x(t),y(t),z(t)
+        x_t = z0-b * ((np.cos(np.pi * (t / tau)- phi))**(2*n))
+        y_t = z0-b * ((np.cos(np.pi * (t / tau)- phi))**(2*n))
         z_t = z0-b * ((np.cos(np.pi * (t / tau)- phi))**(2*n))
+        xg = x_t
+        o_rx =  b # Valore di riferimento originale x
+        n_rx = 0.1
+        yg = y_t
+        o_ry =  b # Valore di riferimento originale y
+        n_ry = 0.1
         zg = z_t
-        o_r = b
-        n_r = 0.2
-        z_t = (((z_t-(z0-b))*n_r)/o_r)-0.1
-        
+        o_rz =  b # Valore di riferimento originale z
+        n_rz = 0.1
+        x_t = (((z_t-(z0-b))*n_rx)/o_rx)-0.05
+        y_t = (((z_t-(z0-b))*n_ry)/o_ry)-0.05
+        z_t = (((z_t-(z0-b))*n_rz)/o_rz)-0.05
 
-        T_matrix = self.pose_to_matrix(self.initTipMatrix_)
-        new_pose_matrix = T_matrix
-        new_pose_matrix[2][3] = new_pose_matrix[2][3]+z_t  # Update z position according to z(t)
-        new_pose = self.matrix_to_pose(new_pose_matrix)
-        self.sim_.setObjectPose(self.target_, new_pose, self.base_)
-        self.simIK_.handleGroup(self.ikEnv_, self.ikGroup_, {"syncWorlds": True})
+        # normalizzazione = (valore-min_vecchio)*(max_nuovo-min_nuovo)/(max_vecchio-min_vecchio) + min_nuovo
+        
+        """
+

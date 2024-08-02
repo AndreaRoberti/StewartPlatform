@@ -1,9 +1,9 @@
 <launch>
 
-	<node pkg="rostopic"
+	<!-- <node pkg="rostopic"
 		type="rostopic"
 		name="start_sim"
-		args="pub /startSimulation std_msgs/Bool true" />
+		args="pub /startSimulation std_msgs/Bool true" /> -->
 
 
 	<node name="coppelia_combiner" pkg="stewart_platform" type="coppelia_combiner" args=""

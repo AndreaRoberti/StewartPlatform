@@ -130,14 +130,20 @@ def main():
 
     stewart_platform_ekf = StewartPlatformEKF()
     
-    rate = 150# Hz
-    ros_rate = rospy.Rate(rate)
+    # rate = 150# Hz
+    # ros_rate = rospy.Rate(rate)
 
-    while not rospy.is_shutdown():
+    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 60:
         stewart_platform_ekf.update()
-        ros_rate.sleep()
+    
+
+    # while not rospy.is_shutdown():
+    #     stewart_platform_ekf.update()
+    #     ros_rate.sleep()
 
     stewart_platform_ekf.stopSimulation()
+    
+    # stewart_platform_ekf.plotData()  # CREA LA FUNZIONE E LA CHIAMI QUA
 
 if __name__ == '__main__':
     main()

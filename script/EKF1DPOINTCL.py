@@ -53,6 +53,17 @@ class StewartPlatformEKF():
     def centroid_callback(self, msg):
         self.centroid_pose_= msg
 
+    def plotData(self):
+        self.xs_ = asarray(self.xs_)
+        self.pos_ = asarray(self.pos_)
+        plt.plot(range(len(self.xs_)), self.xs_, label='EKF', color='b', marker='o')
+        plt.plot(range(len(self.xs_)), self.pos_, label='Real position', color='r', marker='x')
+        plt.xlabel('Numero misurazioni nel tempo')
+        plt.ylabel('Posizione')
+        plt.legend()
+        plt.show()
+
+
     def get_transform(self, source_frame, target_frame):
         try:
             (trans, rot) = self.tf_listener_.lookupTransform(target_frame, source_frame, rospy.Time(0))
@@ -106,18 +117,6 @@ class StewartPlatformEKF():
         self.pos_.append(self.centroid_pose_.pose.position.z)
         self.xs_.append(self.rk.x[0])
 
-
-        if t > 30.00:
-            self.xs_ = asarray(self.xs_)
-            self.pos_ = asarray(self.pos_)
-            plt.plot(range(len(self.xs_)), self.xs_, label='EKF', color='b', marker='o')
-            plt.plot(range(len(self.xs_)), self.pos_, label='Real position', color='r', marker='x')
-            plt.xlabel('Numero misurazioni nel tempo')
-            plt.ylabel('Posizione')
-            plt.legend()
-            plt.show()
-            rospy.signal_shutdown('Plot completato')
-
     def stopSimulation(self):
         self.sim.stopSimulation()
 
@@ -133,7 +132,7 @@ def main():
     # rate = 150# Hz
     # ros_rate = rospy.Rate(rate)
 
-    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 60:
+    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 20:
         stewart_platform_ekf.update()
     
 
@@ -141,6 +140,7 @@ def main():
     #     stewart_platform_ekf.update()
     #     ros_rate.sleep()
 
+    stewart_platform_ekf.plotData()
     stewart_platform_ekf.stopSimulation()
     
     # stewart_platform_ekf.plotData()  # CREA LA FUNZIONE E LA CHIAMI QUA

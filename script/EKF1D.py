@@ -57,6 +57,16 @@ class StewartPlatformEKF():
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             print('No transform available %s - %s', source_frame, target_frame)
 
+    def plotData(self):
+        self.xs_ = asarray(self.xs_)
+        self.pos_ = asarray(self.pos_)
+        plt.plot(range(len(self.xs_)), self.xs_, label='EKF', color='b', marker='o')
+        plt.plot(range(len(self.xs_)), self.pos_, label='Real position', color='r', marker='x')
+        plt.xlabel('Numero misurazioni nel tempo')
+        plt.ylabel('Posizione')
+        plt.legend()
+        plt.show()
+
     def Hx(self, m):
         """function which takes as input the state variable (self.x) along
         with the optional arguments in hx_args, and returns the measurement
@@ -112,6 +122,7 @@ class StewartPlatformEKF():
             self.pos_.append(zz)
             self.xs_.append(self.rk.x[0])
 
+        """
         if t > 30.00:
             self.xs_ = asarray(self.xs_)
             self.pos_ = asarray(self.pos_)
@@ -122,9 +133,11 @@ class StewartPlatformEKF():
             plt.legend()
             plt.show()
             rospy.signal_shutdown('Plot completato')
+        """
 
     def stopSimulation(self):
         self.sim.stopSimulation()
+    
 
 
 
@@ -135,13 +148,16 @@ def main():
 
     stewart_platform_ekf = StewartPlatformEKF()
     
-    rate = 100# Hz
-    ros_rate = rospy.Rate(rate)
+    #rate = 100# Hz
+    #ros_rate = rospy.Rate(rate)
 
-    while not rospy.is_shutdown():
+    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 20:
         stewart_platform_ekf.update()
-        ros_rate.sleep()
 
+    #while not rospy.is_shutdown():
+    #    stewart_platform_ekf.update()
+     #   ros_rate.sleep()
+    stewart_platform_ekf.plotData()
     stewart_platform_ekf.stopSimulation()
 
 if __name__ == '__main__':

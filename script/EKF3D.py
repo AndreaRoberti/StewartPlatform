@@ -80,6 +80,44 @@ class StewartPlatformEKF():
     def centroid_callback(self, msg):
         self.centroid_pose_= msg
 
+    def plotData(self):
+        self.xsx_ = asarray(self.xsx_)
+        self.xsy_ = asarray(self.xsy_)
+        self.xsz_ = asarray(self.xsz_)
+        self.posx_ = asarray(self.posx_)
+        self.posy_ = asarray(self.posy_)
+        self.posz_ = asarray(self.posz_)
+
+        # Primo grafico per x
+        plt.figure()
+        plt.plot(range(len(self.xsz_)), self.xsx_, label='EKF x', color='b', marker='o')
+        plt.plot(range(len(self.xsz_)), self.posx_, label='Real position', color='r', marker='x')
+        plt.xlabel('Numero misurazioni nel tempo')
+        plt.ylabel('Posizione')
+        plt.title('Confronto EKF vs Posizione Reale (x)')
+        plt.legend()
+
+        # Secondo grafico per y
+        plt.figure()
+        plt.plot(range(len(self.xsz_)), self.xsy_, label='EKF y', color='b', marker='o')
+        plt.plot(range(len(self.xsz_)), self.posy_, label='Real position', color='r', marker='x')
+        plt.xlabel('Numero misurazioni nel tempo')
+        plt.ylabel('Posizione')
+        plt.title('Confronto EKF vs Posizione Reale (y)')
+        plt.legend()
+
+        # Terzo grafico per z
+        plt.figure()
+        plt.plot(range(len(self.xsz_)), self.xsz_, label='EKF z', color='b', marker='o')
+        plt.plot(range(len(self.xsz_)), self.posz_, label='Real position', color='r', marker='x')
+        plt.xlabel('Numero misurazioni nel tempo')
+        plt.ylabel('Posizione')
+        plt.title('Confronto EKF vs Posizione Reale (z)')
+        plt.legend()
+
+        # Mostra tutti i grafici
+        plt.show()
+
     def get_transform(self, source_frame, target_frame):
         try:
             (trans, rot) = self.tf_listener_.lookupTransform(target_frame, source_frame, rospy.Time(0))
@@ -159,6 +197,7 @@ class StewartPlatformEKF():
         self.xsy_.append(self.rk.x[2])
         self.xsz_.append(self.rk.x[4])
 
+        """
         if t > 50.00:
             self.xsx_ = asarray(self.xsx_)
             self.xsy_ = asarray(self.xsy_)
@@ -196,7 +235,7 @@ class StewartPlatformEKF():
 
             # Mostra tutti i grafici
             plt.show()
-            """
+            
             plt.plot(range(len(self.xsz_)), self.xsx_, label='EKF x', color='b', marker='o')
             plt.plot(range(len(self.xsz_)), self.posx_, label='Real position', color='r', marker='x')
             plt.xlabel('Numero misurazioni nel tempo')
@@ -238,7 +277,7 @@ class StewartPlatformEKF():
             # Mostra il grafico
             plt.show()
             """
-            rospy.signal_shutdown('Plot completato')
+ 
 
     def stopSimulation(self):
         self.sim.stopSimulation()
@@ -250,13 +289,16 @@ def main():
 
     stewart_platform_ekf = StewartPlatformEKF()
     
-    rate = 100 # Hz
-    ros_rate = rospy.Rate(rate)
+    #rate = 100# Hz
+    #ros_rate = rospy.Rate(rate)
 
-    while not rospy.is_shutdown():
+    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 20:
         stewart_platform_ekf.update()
-        ros_rate.sleep()
 
+    #while not rospy.is_shutdown():
+    #    stewart_platform_ekf.update()
+     #   ros_rate.sleep()
+    stewart_platform_ekf.plotData()
     stewart_platform_ekf.stopSimulation()
 
 if __name__ == '__main__':

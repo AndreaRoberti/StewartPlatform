@@ -1,0 +1,293 @@
+<?xml version="1.0"?>
+<robot name="stewartPlatform">
+    <link name="robot_base">
+        <visual name="stewartPlatform">
+            <origin rpy="-3.141593 3.141593 -3.141593" xyz="0.000000 0.000000 0.010000" />
+            <geometry>
+                <cylinder radius="0.5" length="0.019999999552965" />
+            </geometry>
+            <material name="robot_base_material">
+                <color rgba="0.630000 0.630000 0.630000 1.0" />
+            </material>
+        </visual>
+        <visual name="upArmSphere">
+            <origin rpy="0.034741 2.500868 0.637577" xyz="0.500000 0.000000 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_upArmSphere_vis_1.dae" />
+            </geometry>
+            <material name="upArmSphere_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm1Target">
+            <origin rpy="0.034741 2.500868 2.731972" xyz="-0.250000 0.433013 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm1Target_vis_1.dae" />
+            </geometry>
+            <material name="downArm1Target_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm2Target">
+            <origin rpy="0.034741 2.500868 -1.456818" xyz="-0.250000 -0.433013 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm2Target_vis_1.dae" />
+            </geometry>
+            <material name="downArm2Target_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm3Target">
+            <origin rpy="0.624551 3.036262 1.215224" xyz="0.469846 0.171010 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm3Target_vis_1.dae" />
+            </geometry>
+            <material name="downArm3Target_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm4Target">
+            <origin rpy="0.624551 3.036262 -2.973566" xyz="-0.383022 0.321394 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm4Target_vis_1.dae" />
+            </geometry>
+            <material name="downArm4Target_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm5Target">
+            <origin rpy="0.624551 3.036262 -0.879171" xyz="-0.086824 -0.492404 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm5Target_vis_1.dae" />
+            </geometry>
+            <material name="downArm5Target_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="upArmCyl">
+            <origin rpy="-2.844887 3.839724 -3.141593" xyz="0.407795 -0.043856 0.129886" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="upArmCyl_material">
+                <color rgba="0.858400 0.661600 0.661600 1.0" />
+            </material>
+        </visual>
+        <visual name="upArmCyl">
+            <origin rpy="-2.844887 3.839724 -3.141593" xyz="0.284855 -0.102330 0.276400" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="upArmCyl_2_material">
+                <color rgba="0.858400 0.661600 0.661600 1.0" />
+            </material>
+        </visual>
+        <visual name="upArmSphere">
+            <origin rpy="0.034741 2.500868 0.637577" xyz="0.192649 -0.146186 0.386286" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_upArmSphere_2_vis_1.dae" />
+            </geometry>
+            <material name="upArmSphere_2_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="platformTable">
+            <origin rpy="-3.141593 3.141593 3.141593" xyz="-0.000000 -0.000000 0.396286" />
+            <geometry>
+                <cylinder radius="0.25" length="0.019999999552965" />
+            </geometry>
+            <material name="platformTable_material">
+                <color rgba="0.630000 0.630000 0.630000 1.0" />
+            </material>
+        </visual>
+        <visual name="platform">
+            <origin rpy="-3.141593 3.141593 3.141593" xyz="-0.000000 -0.000000 0.506286" />
+            <geometry>
+                <cylinder radius="0.0099999997764826" length="0.20000000298023" />
+            </geometry>
+            <material name="platform_material">
+                <color rgba="0.630000 0.630000 0.630000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm1Sphere">
+            <origin rpy="0.034741 2.500868 2.731972" xyz="0.030276 0.239932 0.386286" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm1Sphere_vis_1.dae" />
+            </geometry>
+            <material name="downArm1Sphere_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm2Sphere">
+            <origin rpy="0.034741 2.500868 -1.456819" xyz="-0.222925 -0.093747 0.386286" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm2Sphere_vis_1.dae" />
+            </geometry>
+            <material name="downArm2Sphere_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm3Cyl">
+            <origin rpy="2.546644 3.626653 -2.268742" xyz="0.232698 0.193525 0.276426" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm3Cyl_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm4Cyl">
+            <origin rpy="2.546644 3.626653 -0.174347" xyz="-0.283947 0.104760 0.276426" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm4Cyl_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm5Cyl">
+            <origin rpy="2.546644 3.626653 1.920049" xyz="0.051249 -0.298286 0.276426" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm5Cyl_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm3Sphere">
+            <origin rpy="0.624551 3.036262 1.215224" xyz="0.131064 0.203175 0.386322" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm3Sphere_vis_1.dae" />
+            </geometry>
+            <material name="downArm3Sphere_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm4Sphere">
+            <origin rpy="0.624551 3.036262 -2.973567" xyz="-0.241487 0.011917 0.386322" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm4Sphere_vis_1.dae" />
+            </geometry>
+            <material name="downArm4Sphere_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm5Sphere">
+            <origin rpy="0.624551 3.036262 -0.879171" xyz="0.110423 -0.215092 0.386322" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm5Sphere_vis_1.dae" />
+            </geometry>
+            <material name="downArm5Sphere_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm1Cyl">
+            <origin rpy="-2.844887 3.839724 -1.047197" xyz="-0.053807 0.297856 0.276400" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm1Cyl_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm2Cyl">
+            <origin rpy="-2.844887 3.839724 1.047198" xyz="-0.231048 -0.195526 0.276400" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm2Cyl_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm3Cyl">
+            <origin rpy="2.546644 3.626653 -2.268742" xyz="0.368211 0.180659 0.129897" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm3Cyl_2_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm4Cyl">
+            <origin rpy="2.546644 3.626653 -0.174347" xyz="-0.340562 0.228550 0.129897" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm4Cyl_2_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm5Cyl">
+            <origin rpy="2.546644 3.626653 1.920049" xyz="-0.027650 -0.409210 0.129897" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm5Cyl_2_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm1Cyl">
+            <origin rpy="-2.844887 3.839724 -1.047197" xyz="-0.165917 0.375088 0.129886" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm1Cyl_2_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm2Cyl">
+            <origin rpy="-2.844887 3.839724 1.047198" xyz="-0.241878 -0.331233 0.129886" />
+            <geometry>
+                <cylinder radius="0.014999999664724" length="0.30000001192093" />
+            </geometry>
+            <material name="downArm2Cyl_2_material">
+                <color rgba="0.661600 0.799360 0.858400 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm3Tip">
+            <origin rpy="0.624551 3.036262 1.215224" xyz="0.469846 0.171010 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm3Tip_vis_1.dae" />
+            </geometry>
+            <material name="downArm3Tip_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm4Tip">
+            <origin rpy="0.624551 3.036262 -2.973566" xyz="-0.383022 0.321393 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm4Tip_vis_1.dae" />
+            </geometry>
+            <material name="downArm4Tip_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm1Tip">
+            <origin rpy="0.034741 2.500868 2.731972" xyz="-0.250000 0.433013 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm1Tip_vis_1.dae" />
+            </geometry>
+            <material name="downArm1Tip_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm2Tip">
+            <origin rpy="0.034741 2.500868 -1.456819" xyz="-0.250000 -0.433013 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm2Tip_vis_1.dae" />
+            </geometry>
+            <material name="downArm2Tip_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+        <visual name="downArm5Tip">
+            <origin rpy="0.624551 3.036262 -0.879171" xyz="-0.086824 -0.492404 0.020000" />
+            <geometry>
+                <mesh filename="file:///home/andrea/panda_ws/src/StewartPlatform/urdf/stewart_platform_downArm5Tip_vis_1.dae" />
+            </geometry>
+            <material name="downArm5Tip_material">
+                <color rgba="1.000000 0.907200 0.420000 1.0" />
+            </material>
+        </visual>
+    </link>
+</robot>

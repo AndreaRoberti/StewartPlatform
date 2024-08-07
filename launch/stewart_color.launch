@@ -38,6 +38,8 @@
 
 	</node>
 
+	<!-- <node pkg="tf" type="static_transform_publisher" name="base_2_world" output="screen" args="0 0 0 0 0 0 /world /robot_base 1"/>
+	<param name="robot_description" command="cat $(find stewart_platform)/urdf/stewart_platform.urdf" /> -->
 
 	<node name="stewart_platform" pkg="rviz" type="rviz"
 		args="-d $(find stewart_platform)/rviz/stewart.rviz" respawn="false" />

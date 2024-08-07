@@ -157,8 +157,9 @@ def main():
     #while not rospy.is_shutdown():
     #    stewart_platform_ekf.update()
      #   ros_rate.sleep()
-    stewart_platform_ekf.plotData()
     stewart_platform_ekf.stopSimulation()
+    stewart_platform_ekf.plotData()
+    
 
 if __name__ == '__main__':
     main()

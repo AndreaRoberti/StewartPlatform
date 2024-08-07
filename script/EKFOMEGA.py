@@ -26,7 +26,7 @@ class StewartPlatformEKF():
         self.br_ = tf.TransformBroadcaster()
         self.start_t_ = rospy.get_time()
 
-        self.rk = ExtendedKalmanFilter(dim_x=2, dim_z=1)
+        self.rk = ExtendedKalmanFilter(dim_x=3, dim_z=1)
         self.tempo_ = []
         self.xs_ = []  # Tutti i valori di x (stati calcolati)
         self.pos_ = []  # Posizioni reali z 
@@ -41,7 +41,7 @@ class StewartPlatformEKF():
 
         # Ingressi 
         self.A_ = 1 #ampiezza
-        self.omega_ = 1 #frequenza
+        self.omega_ = 1
         self.phi_ = 0 #fase
       
     def pose_callback(self, msg):
@@ -86,7 +86,7 @@ class StewartPlatformEKF():
         """function which computes the Jacobian of the H matrix (measurement
            function). Takes state variable (self.x) as input, along with the
            optional arguments in args, and returns H."""
-        H = np.array([[1, 0]])
+        H = np.array([[1, 0, 0]])
         return H
     
     def update(self):
@@ -97,13 +97,15 @@ class StewartPlatformEKF():
         #state vector
         x1 =  self.A_ * np.sin(self.omega_*t+self.phi_)
         x2 = self.A_ *self.omega_* np.cos(self.omega_*t+self.phi_)
-        x = np.array([x1,x2])
+        x3 = self.omega_
+        x = np.array([x1,x2,x3])
 
         self.rk.x = x #state vector
-        self.rk.F = np.array([[np.cos(self.omega_*t),np.sin(self.omega_*t)/self.omega_],[-self.omega_*np.sin(self.omega_*t), np.cos(self.omega_*t)]])#state transition matrix
+        self.rk.F = np.array([[np.cos(self.omega_*t),np.sin(self.omega_*t)/self.omega_,0],[-self.omega_*np.sin(self.omega_*t), np.cos(self.omega_*t),0],[0,0,1]])#state transition matrix
         sigma1 = 1
         sigma2 = 1
-        self.rk.Q = np.array([[sigma1*(t**2), 0],[0,sigma2]]) #process noise covariance matrix -> errore sul modello
+        sigma3 = 1
+        self.rk.Q = np.array([[sigma1*(t**2), 0,0],[0,sigma2,0],[0,0,sigma3]]) #process noise covariance matrix -> errore sul modello
         noise_variance = 0.001
         noise= np.random.normal(loc=0, scale=np.sqrt(noise_variance))
         self.rk.R = np.array([[noise_variance]])#measurement noise covariance matrix ->errore sulla misurazione
@@ -115,6 +117,7 @@ class StewartPlatformEKF():
             self.rk.update(z, self.Jacobian, self.Hx)
 
         self.pos_.append(self.centroid_pose_.pose.position.z)
+        print(self.rk.x[2])
         self.xs_.append(self.rk.x[0])
 
     def stopSimulation(self):
@@ -139,9 +142,10 @@ def main():
     # while not rospy.is_shutdown():
     #     stewart_platform_ekf.update()
     #     ros_rate.sleep()
+
+    
     stewart_platform_ekf.stopSimulation()
     stewart_platform_ekf.plotData()
-   
     
     # stewart_platform_ekf.plotData()  # CREA LA FUNZIONE E LA CHIAMI QUA
 

@@ -17,7 +17,7 @@ sim.startSimulation()
 while (t := sim.getSimulationTime()) < 60:
     print(f'Simulation time: {t:.2f} [s]')
 
-    stewart_platform.example_ik(t)
+    stewart_platform.respiration_ik(t)
 
     sim.step()
 

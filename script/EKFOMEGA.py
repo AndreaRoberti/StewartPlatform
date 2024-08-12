@@ -4,6 +4,7 @@ import rospy
 from numpy import asarray
 from filterpy.kalman import ExtendedKalmanFilter
 import tf
+import math
 from geometry_msgs.msg import PoseStamped
 import matplotlib.pyplot as plt
 from StewartPlatform import *
@@ -40,8 +41,8 @@ class StewartPlatformEKF():
         self.sim.startSimulation()
 
         # Ingressi 
-        self.A_ = 1 #ampiezza
-        self.omega_ = 1
+        self.A_ = 500 #ampiezza
+        self.omega_ = math.pi*2*0.25
         self.phi_ = 0 #fase
       
     def pose_callback(self, msg):
@@ -80,7 +81,7 @@ class StewartPlatformEKF():
         with the optional arguments in hx_args, and returns the measurement
         that would correspond to that state. """
 
-        return m[0]
+        return m[0] #l'unica misurazione che abbiamo è sulla posizione che è il primo elemento del vettore dellle variabili di stato
     
     def Jacobian(self, m):
         """function which computes the Jacobian of the H matrix (measurement
@@ -91,7 +92,7 @@ class StewartPlatformEKF():
     
     def update(self):
         t = rospy.get_time() - self.start_t_
-        self.stewart_platform.example_ik(t)
+        self.stewart_platform.respiration_ik(t)
         self.sim.step()
 
         #state vector
@@ -106,18 +107,18 @@ class StewartPlatformEKF():
         sigma2 = 1
         sigma3 = 1
         self.rk.Q = np.array([[sigma1*(t**2), 0,0],[0,sigma2,0],[0,0,sigma3]]) #process noise covariance matrix -> errore sul modello
-        noise_variance = 0.001
+        noise_variance =0.001
         noise= np.random.normal(loc=0, scale=np.sqrt(noise_variance))
         self.rk.R = np.array([[noise_variance]])#measurement noise covariance matrix ->errore sulla misurazione
 
-        for i in range(5):
+        for i in range(10):
 
             z = self.centroid_pose_.pose.position.z + noise           
             self.rk.predict()
             self.rk.update(z, self.Jacobian, self.Hx)
 
         self.pos_.append(self.centroid_pose_.pose.position.z)
-        print(self.rk.x[2])
+        print(self.rk.x[0])
         self.xs_.append(self.rk.x[0])
 
     def stopSimulation(self):
@@ -135,7 +136,7 @@ def main():
     # rate = 150# Hz
     # ros_rate = rospy.Rate(rate)
 
-    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 20:
+    while (t := stewart_platform_ekf.sim.getSimulationTime()) < 10:
         stewart_platform_ekf.update()
     
 

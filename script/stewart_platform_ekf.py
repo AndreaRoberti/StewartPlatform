@@ -155,7 +155,7 @@ class StewartPlatformEKF():
 
         t= rospy.get_time() - self.start_t_ #time
         #print(f'Simulation time: {t:.2f} [s]')
-        self.stewart_platform.example_ik(t)
+        self.stewart_platform.respiration_ik(t)
         self.sim.step()
 
         #parametri modello

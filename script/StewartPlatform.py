@@ -73,18 +73,19 @@ class StewartPlatform():
 
         return [position[0], position[1], position[2], qx, qy, qz, qw]
         
-    def example_ik(self, t):
+    def respiration_ik(self, t):
         # Parameters for the functions x(t),y(t),z(t)
         z0 = self.z0_
-        A = 1
-        omega = 3
+        A = 500
+        omega = math.pi*2*0.25
         phi = 0
         z_t = z0-A * np.sin(omega*t+phi)
         zg = z_t
-        o_rz =  A # Valore di riferimento originale z
+        o_rz =  A 
         n_rz = 0.08
         z_t = (((z_t-(z0-A))*n_rz)/o_rz)-0.04
 
+        # normalizzazione = (valore-min_vecchio)*(max_nuovo-min_nuovo)/(max_vecchio-min_vecchio) + min_nuovo
 
         """
         # Compute x(t),y(t),z(t)

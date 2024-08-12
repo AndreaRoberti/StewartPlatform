@@ -83,7 +83,7 @@ class StewartPlatformEKF():
     
     def update(self):
         t = rospy.get_time() - self.start_t_
-        self.stewart_platform.example_ik(t)
+        self.stewart_platform.respiration_ik(t)
         self.sim.step()
 
         #state vector

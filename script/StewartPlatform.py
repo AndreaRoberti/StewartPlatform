@@ -17,6 +17,11 @@ class StewartPlatform():
         print(self.initTipMatrix_)
         self.z0_ = self.initTipMatrix_[2]
 
+        #omega variables
+        self.alpha_ = 0.01
+        self.beta_ = math.pi*2*0.25
+        #self.beta_ = 0
+
         self.ikEnv_ = self.simIK_.createEnvironment()
         self.ikGroup_ = self.simIK_.createGroup(self.ikEnv_)
         self.simToIkMapping = []
@@ -77,7 +82,8 @@ class StewartPlatform():
         # Parameters for the functions x(t),y(t),z(t)
         z0 = self.z0_
         A = 500
-        omega = math.pi*2*0.25
+        #omega = self.alpha_*t+self.beta_ #omega tempo variante 
+        omega = self.alpha_*t+self.beta_
         phi = 0
         z_t = z0-A * np.sin(omega*t+phi)
         zg = z_t

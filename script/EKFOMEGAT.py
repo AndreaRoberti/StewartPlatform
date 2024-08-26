@@ -117,11 +117,11 @@ class StewartPlatformEKF():
         sigma2 = 1
         sigma3 = 1
         self.rk.Q = np.array([[sigma1*(t**2), 0,0],[0,sigma2,0],[0,0,sigma3]]) #process noise covariance matrix -> errore sul modello
-        noise_variance =0.001
+        noise_variance = 0.0001
         noise= np.random.normal(loc=0, scale=np.sqrt(noise_variance))
         self.rk.R = np.array([[noise_variance]])#measurement noise covariance matrix ->errore sulla misurazione
 
-        for i in range(10):
+        for i in range(5):
 
             z = self.centroid_pose_.pose.position.z + noise           
             self.rk.predict()
